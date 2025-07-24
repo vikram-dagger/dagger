@@ -6,64 +6,81 @@ module.exports = {
       items: [
         "index",
         "components",
-        {
-          type: "category",
-          label: "Features",
-          items: [
-            "features/programmability",
-            "features/reusability",
-            "features/performance",
-            "features/observability",
-            "features/security",
-            "features/llm",
-            "features/shell",
-          ],
-        }
-        ],
+        "use-cases",
+      ]
     },
+    {
+      type: "category",
+      label: "Features",
+      items: [
+        "features/programmability",
+        "features/reusability",
+        "features/performance",
+        "features/observability",
+        "features/security",
+        "features/llm",
+        "features/shell",
+      ],
+    },
+    /*
+    {
+      type: "category",
+      label: "Use Cases",
+      items: [
+        "use-cases/agentic-ci",
+        "use-cases/monorepos"
+      ],
+    },
+    */
     {
       type: "category",
       label: "Getting Started",
       items: [
         "installation",
-        "quickstart/core-concepts/index",
+        //"quickstart/core-concepts/index",
         "quickstart/index",
         "ide-setup",
       ],
     },
+  ],
+  using: [
     {
       type: "category",
-      label: "Use Cases",
-      items: ["use-cases/agentic-ci", "use-cases/monorepos"],
+      label: "Using Dagger",
+      items: [
+        "using/index",
+      ],
     },
     {
       type: "category",
-      label: "Components",
+      label: "Typed Objects",
       items: [
-        "components/index",
-        "components/objects/create-your-own",
-        {
-          type: "category",
-          label: "Objects",
-          items: [
-            "components/objects/container",
-            "components/objects/directory",
-            "components/objects/file",
-            "components/objects/llm",
-            "components/objects/secret",
-            "components/objects/service",
-            "components/objects/environment",
-          ],
-        },
+        "using/objects/container",
+        "using/objects/directory",
+        "using/objects/file",
+        "using/objects/llm",
+        "using/objects/secret",
+        "using/objects/service",
+        "using/objects/environment",
+        "using/objects/create-your-own",
+      ],
+    },
+    {
+      type: "category",
+      label: "Clients",
+      items: [
+        "using/clients-sdk",
+        "using/clients-cli",
+        "using/clients-http",
       ],
     },
     {
       type: "category",
       label: "Integrations",
       items: [
-        "integrations/index",
-        "integrations/ci",
-        "integrations/container-runtimes",
+        "using/integrations/index",
+        "using/integrations/ci",
+        "using/integrations/container-runtimes",
       ],
     },
   ],
@@ -108,14 +125,7 @@ module.exports = {
         "extending/custom-applications/php",
       ],
     },
-    {
-      type: "category",
-      label: "Clients",
-      items: [
-        "extending/clients-cli",
-        "extending/clients-http",
-      ],
-    },
+
   ],
   reference: [
     {

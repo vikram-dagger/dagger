@@ -1,25 +1,165 @@
 ---
-title: "Modern CI"
-description: "Build a modern CI workflow with Dagger that's portable, composable, and runs anywhere"
+slug: /use-cases
+title: "Use Cases"
+description: "Learn when to use Dagger."
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import VideoPlayer from '../../src/components/VideoPlayer';
+import VideoPlayer from '../src/components/VideoPlayer';
+
+# Use Cases
+
+## Agentic CI
+
+Dagger can be used as a runtime and programming environment for AI agents. Dagger provides an `LLM` core type that enables native integration of Large Language Models (LLM) in your workflows.
+
+### Tool use
+
+A key feature of Dagger's LLM integration is out-of-the-box support for tool use using Dagger Functions: an LLM can automatically discover and use any available Dagger Functions in the provided environment.
+
+![LLM interaction with environment](/img/current_docs/features/llm-env.svg)
+
+#### Environments
+
+Environments configure any number of inputs and outputs for the LLM. For example, an environment might provide a `Directory`, a `Container`, a custom module, and a `string` variable. The LLM can use these objects and their Dagger Functions to complete the assigned task.
+
+The documentation for the modules are provided to the LLM via [inline documentation](./extending/documentation.mdx) in your Dagger Functions. The LLM can then analyze the available tools and select which ones to use.
+
+Here's an example:
+
+<Tabs groupId="shell">
+
+<TabItem value="Dagger Shell">
+```shell label="First type 'dagger' for interactive mode."
+base=$(container | from alpine)
+env=$(env | with-container-input 'base' $base 'a base container' | with-container-output 'python-dev' 'a container with python dev tools')
+llm | with-env $env | with-prompt "You have an alpine container. Install tools to develop with Python." | env | output python-dev | as-container | terminal
+```
+</TabItem>
+
+<TabItem value="System shell">
+```shell
+dagger <<EOF
+base=\$(container | from alpine)
+env=\$(env |
+  with-container-input 'base' \$base 'a base container' |
+  with-container-output 'python-dev' 'a container with python dev tools')
+llm |
+  with-env \$env |
+  with-prompt "You have an alpine container. Install tools to develop with Python." |
+  env |
+  output python-dev |
+  as-container |
+  terminal
+EOF
+```
+</TabItem>
+
+</Tabs>
+
+Here, an instance of a `Container` is attached as an input to the `Env` environment. The `Container` is a core type with a number of useful functions, such as `withNewFile()` and `withExec()`. When this environment is attached to an `LLM`, the LLM can call any of these Dagger Functions to change the state of the `Container` and complete the assigned task.
+
+#### Agent loop
+
+Consider the following Dagger Function:
+
+<Tabs groupId="language" queryString="sdk">
+<TabItem value="go" label="Go">
+```go file=./quickstart/agent/snippets/part1/go/main.go
+```
+</TabItem>
+<TabItem value="python" label="Python">
+```python file=./quickstart/agent/snippets/part1/python/src/coding_agent/main.py
+```
+</TabItem>
+<TabItem value="typescript" label="TypeScript">
+```typescript file=./quickstart/agent/snippets/part1/typescript/src/index.ts
+```
+</TabItem>
+</Tabs>
+
+This Dagger Function creates a new LLM, gives it an environment (a container with various tools) with an assignment, and prompts it to complete the assignment. The LLM then runs in a loop, calling tools and iterating on its work, until it completes the assignment. This loop happens inside the LLM object, so the value of `result` is the environment with the completed assignment.
+
+### MCP
+
+Model Context Protocol (MCP) support in Dagger can be broken into two categories:
+
+1. Exposing MCP outside Dagger
+1. Connecting to external MCP servers from Dagger
+
+#### Expose MCP outside Dagger
+
+Dagger has built-in MCP support that allows you to easily expose Dagger modules as an MCP server. This allows you to configure a client (such as Claude Desktop, Cursor, Goose CLI/Desktop) to consume modules from [the Daggerverse](https://daggerverse.dev) or any Git repository as native MCP servers.
+
+:::warning
+Currently, only Dagger modules with no required constructor arguments are supported when exposing an MCP server outside  Dagger.
+:::
+
+```mermaid
+flowchart TD
+    A["MCP Client<br>e.g. Claude Desktop / Cursor / Goose"] -- "dagger -m &lt;module&gt; mcp (stdio)" --> C["Dagger MCP Server: tools"]
+    C --> E["Dagger module: functions"]
+```
+
+### Connect to external MCP servers from Dagger
+
+:::note
+Support for connecting to external MCP servers from Dagger is coming soon.
+:::
+
+### Prompt mode
+
+Dagger Shell lets you interact with the attached LLM using natural language commands. Each input builds upon previous interactions, creating a prompt chain that lets you execute complex workflows without needing to know the exact syntax of the underlying Dagger API.
+
+:::note
+"Prompt mode" can be accessed at any time in the Dagger Shell by typing the `>` character.
+:::
+
+Here's an example:
+
+```shell wrap
+source=$(container | from node | with-mounted-directory /src https://github.com/dagger/hello-dagger | with-workdir /src)
+
+You have a container with source code in /src. Describe the source code.
+
+Does the application have unit tests?
+
+Find all the unit tests. Deduce what the application does. Describe it in one paragraph.
+```
+
+### Supported models
+
+Dagger supports a wide range of popular language models, including those from OpenAI, Anthropic and Google. Dagger can access these models either through their respective cloud-based APIs or using local providers like Docker Model Runner or Ollama.
+
+Dagger uses your system's standard environment variables to route LLM requests. Dagger will look for these variables in your environment, or in a `.env` file in the current directory. Learn more about configuring LLM endpoints in Dagger.
+
+### Observability
+
+Dagger provides [end-to-end tracing] of prompts, tool calls, and even low-level system operations. All agent state changes are observable in real time.
+
+### Learn more
+
+- [Build an AI agent with our quickstart]
+- [Browse examples of agentic workflows]
+- [Learn about the agent loop and how to work with LLM prompts and responses]
+- [Configure LLM endpoints]
+
+## Modern CI
 
 This guide will show you how to build a modern CI workflow for an application using Dagger. Workflows often start simple, but eventually transform into a labyrinth of artisanal shell scripts and/or unmanageable YAML code. Dagger lets you replace those artisanal scripts and YAML with a modern API and cross-language scripting engine.
 
-## Requirements
+### Requirements
 
 This guide will take you approximately 10 minutes to complete. You should be familiar with programming in Go, Python,  TypeScript, PHP, or Java.
 
 Before beginning, ensure that:
-- you have [installed the Dagger CLI](../installation.mdx).
-- you know [the basics of Dagger](../quickstart/core-concepts/index.mdx).
+- you have [installed the Dagger CLI](./installation.mdx).
+- you know [the basics of Dagger](./quickstart/core-concepts/index.mdx).
 - you have [Git](https://git-scm.com/downloads) and a container runtime installed on your system and running. This can be [Docker](https://docs.docker.com/engine/install/), [Podman](https://podman.io/docs/installation), [nerdctl](https://github.com/containerd/nerdctl), or other Docker-like systems.
 - you have a GitHub account (optional, only if configuring Dagger Cloud)
 
-## Get the example application
+### Get the example application
 The example application is a skeleton Vue framework application that returns a "Hello from Dagger!" welcome page. Create a Github repository from the [hello-dagger-template](https://github.com/dagger/hello-dagger-template) and set it as the current working directory:
 
 In the GitHub UI:
@@ -35,7 +175,7 @@ gh repo create hello-dagger --template dagger/hello-dagger-template --public --c
 cd hello-dagger
 ```
 
-## Sign up for Dagger Cloud (optional)
+### Sign up for Dagger Cloud (optional)
 :::info
 This step is optional and will create a [Dagger Cloud](https://dagger.io/cloud) account, which is free of charge for a single user. If you prefer not to sign up for Dagger Cloud, you can skip this section.
 :::
@@ -60,7 +200,7 @@ Once you confirm your authentication code, your Dagger CLI will be authenticated
 
 After successfully creating your organization, all future Dagger workflows can be inspected in Dagger Cloud.
 
-## Initialize a Dagger module
+### Initialize a Dagger module
 
 Bootstrap a new Dagger module in Go, Python, TypeScript, PHP, or Java by running `dagger init` in the application's root directory.
 
@@ -112,7 +252,7 @@ dagger functions
 
 You should see information about two auto-generated Dagger Functions: `container-echo` and `grep-dir`.
 
-## Construct a workflow
+### Construct a workflow
 Replace the generated Dagger module files as described below.
 
 <Tabs groupId="language" queryString="sdk">
@@ -510,7 +650,7 @@ In this Dagger module, each Dagger Function performs a different operation:
 - The `build` Dagger Function performs a multi-stage build and returns a final container image with the production-ready application and an NGINX Web server to host and serve it.
 - The `build-env` Dagger Function creates a container with the build environment for the application.
 
-## Run the Dagger module
+### Run the Dagger module
 
 Dagger Shell is the fastest way to interact with the Dagger API, allowing access to both core types and custom Dagger Functions using a familiar Bash-like syntax. Type `dagger` to launch Dagger Shell in interactive mode.
 
@@ -531,8 +671,8 @@ If you signed up for Dagger Cloud, the output of the previous command would have
 <VideoPlayer src="/img/current_docs/quickstart/ci/trace.webm" alt="Visualizing the workflow in Dagger Cloud" />
 
 
-## Interact with the build environment
-The `build-env` Dagger Function returns a `Container` type representing the application's build environment. One of the most interesting built-in Dagger Functions of this type is `terminal`, which can be used to [open an interactive terminal session with the running container](../features/observability.mdx).
+### Interact with the build environment
+The `build-env` Dagger Function returns a `Container` type representing the application's build environment. One of the most interesting built-in Dagger Functions of this type is `terminal`, which can be used to [open an interactive terminal session with the running container](./features/observability.mdx).
 
 To try this, chain an additional function call to `terminal` on the returned `Container`:
 
@@ -544,9 +684,9 @@ This command builds the container image and then drops you into an interactive t
 
 <VideoPlayer src="/img/current_docs/quickstart/ci/buildenv-terminal.webm" alt="Interactive terminal in build environment" />
 
-## Run a container as a local service
+### Run a container as a local service
 
-The `build` Dagger Function returns a `Container` type representing the built container image. Another interesting built-in function to explore here is the `as-service` function, which can be used to [start a container as a local service](../features/services.mdx) and have any exposed ports forwarded to the host machine. This is similar to Docker Compose, except that you're using code instead of YAML to manage your services.
+The `build` Dagger Function returns a `Container` type representing the built container image. Another interesting built-in function to explore here is the `as-service` function, which can be used to [start a container as a local service](./features/services.mdx) and have any exposed ports forwarded to the host machine. This is similar to Docker Compose, except that you're using code instead of YAML to manage your services.
 
 To try this, use the function chain below:
 
@@ -562,11 +702,11 @@ You should now be able to access the application by browsing to `http://localhos
 
 <VideoPlayer src="/img/current_docs/quickstart/ci/curl.webm" alt="Testing the service" />
 
-## Why Dagger for Modern CI?
+### Why Dagger for Modern CI?
 
 Dagger brings several advantages to modern CI/CD workflows:
 
-### Modules and Interoperability
+#### Modules and Interoperability
 
 Dagger lets you encapsulate common tasks and workflows in reusable, shareable Dagger modules. These modules are simply collections of Dagger Functions, packaged together for easy sharing and consumption. Their design is inspired by Go modules:
 
@@ -580,7 +720,7 @@ Modern development takes place in a mix of languages, tools and platforms. In th
 
 This feature immediately unlocks cross-team collaboration: even though different teams might prefer different languages, the Dagger modules they create are instantly compatible and usable by other teams. It also means that you no longer need to care which language your CI tooling is written in; you can use the one that you're most comfortable with or that best suits your requirements.
 
-#### Example
+##### Example
 
 Here's an example, where a Dagger Function written in Python calls both core Dagger Functions and third-party Dagger Functions written in Go:
 
@@ -603,19 +743,79 @@ async def ci(self, source: dagger.Directory) -> str:
     return await dag.trivy().scan_container(dag.container().from_(ref))
 ```
 
-## Next steps
+### Next steps
 
 Congratulations! You've created your first modern CI workflow with Dagger.
 
 Now you have the tools to successfully take the next step: [adopting Dagger in your project].
 
-### Learn more
+#### Learn more
 
-- [Create a module](../extending/custom-functions.mdx)
-- [Call a remote module](../extending/remote-modules.mdx)
-- [Understand module structure](../extending/module-structure.mdx)
-- [Publish a module](../extending/daggerverse.mdx)
+- [Create a module](./extending/custom-functions.mdx)
+- [Call a remote module](./extending/remote-modules.mdx)
+- [Understand module structure](./extending/module-structure.mdx)
+- [Publish a module](./extending/daggerverse.mdx)
 - Use modules in Dagger Cloud
 - [Find modules in the Daggerverse](https://daggerverse.dev)
 
 In the meantime, we encourage you to [join our awesome community on Discord](https://discord.gg/dagger-io) to introduce yourself and ask questions. And [starring our GitHub repository](https://github.com/dagger/dagger) is always appreciated!
+
+## Monorepo optimization
+
+A monorepo typically contains multiple independent projects, each of which has different test, build and deployment requirements. Managing these requirements in a single CI workflow or YAML file can be incredibly complex and time-consuming.
+
+Dagger Modules provide a framework that you can use to break up this complexity and cleanly separate CI responsibilities in a monorepo without losing reusability or performance.
+
+:::tip
+A major strength of Dagger is that it can model dependencies across languages. For example, Dagger's own docs builder module is written in TypeScript, while the CLI builder is in Go. But the docs builder includes a generated CLI reference, and this is accurately modeled as a dependency between the CLI and docs modules
+:::
+
+### Common patterns
+
+When using Dagger to build a monorepo, you can choose between two common patterns for organizing your Dagger Modules. The choice depends on the complexity of the monorepo and the relationships between the projects in it.
+
+#### Top-level Dagger Module
+
+One common approach is to create a top-level Dagger Module for the monorepo, attach sub-modules for each component of the monorepo, and model the Dagger Module dependencies on the logical dependencies between components. This pattern is suitable when there are dependencies but differences between the projects in the monorepo (e.g. a monorepo with SDKs, CLIs, web applications, docs, all of which have different requirements).
+
+```mermaid
+graph TD
+    A[Top-level orchestrator module] --> B[Webapp frontend module]
+    A[Top-level orchestrator module] --> C[Webapp backend module]
+    A[Top-level orchestrator module] --> D[Utilities module]
+    A[Top-level orchestrator module] --> E[Docs module]
+```
+
+#### Benefits
+
+Benefits of this pattern include:
+
+- **Easier debugging**: Sub-modules provide a way to separate, and therefore easily debug, the business logic for different workflows.
+- **Code reuse**: There may be opportunities for sub-modules in different projects to import each other to reuse existing functionality.
+- **Improved performance**: The top-level module of a project can orchestrate the sub-modules using the language’s native concurrency features.
+
+### Shared Dagger Module
+
+An alternative approach is to create a single, shared automation module which all projects use and contribute to. This pattern is suitable when there are significant commonalities between the projects in the monorepo (e.g. a monorepo with only micro-services or only front-end applications).
+
+```mermaid
+graph TD
+    A[Shared module] --> B[Microservice 1]
+    A[Shared module] --> C[Microservice 2]
+    A[Shared module] --> D[Microservice 3]
+```
+#### Benefits
+
+Benefits of this pattern include:
+
+- **Code reuse**: This reduces code duplication and ensures a consistent CI environment for all projects. For example, the shared module could create a common build environment and leverage this for multiple projects in the monorepo.
+- **Reduced onboarding friction**: There is no need to create a new CI module when adding a new project or component. New projects can get started faster with their CI implementation.
+- **Best practices**: All projects benefit from the best practices implemented in the shared module.
+- **Knowledge sharing**: By contributing to a shared CI module, project teams can learn from each other's CI strategies.
+
+#### Optimizing monorepo builds
+
+When considering how to optimize monorepo builds, there are two layers to keep in mind:
+
+- Dagger's [layer cache]: Even if unnecessary CI jobs are triggered, Dagger's layer cache allows most to finish almost instantly, as it quickly determines there's nothing to run. This minimizes infrastructure overhead and also makes CI configurations smaller and less fragile, by decoupling them from application-specific caching logic.
+- CI-specific event filters: CI event filters can serve as a secondary optimization. These filters are typically implemented in CI-specific configuration. As a result, they are not as portable as Dagger Modules and therefore should be used only when absolutely necessary.

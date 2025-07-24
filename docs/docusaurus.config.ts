@@ -200,16 +200,16 @@ const config: Config = {
         {
           position: "left",
           to: "/",
-          label: "Docs",
+          label: "Introduction",
           className: "navbar-blog-link",
-          activeBaseRegex: "^/$|^/(?!examples|extending|reference|cookbook).*",
+          activeBaseRegex: "^/$|^/(?!examples|using|extending|reference|cookbook).*",
         },
         {
           position: "left",
-          to: "/examples",
-          label: "Examples",
+          to: "/using",
+          label: "Using Dagger",
           className: "navbar-blog-link",
-          activeBaseRegex: "^/examples/?.*",
+          activeBaseRegex: "^/using/?.*",
         },
         {
           position: "left",
@@ -217,6 +217,13 @@ const config: Config = {
           label: "Extending Dagger",
           className: "navbar-blog-link",
           activeBaseRegex: "^/extending/?.*",
+        },
+        {
+          position: "left",
+          to: "/examples",
+          label: "Examples",
+          className: "navbar-blog-link",
+          activeBaseRegex: "^/examples/?.*",
         },
         {
           position: "left",
