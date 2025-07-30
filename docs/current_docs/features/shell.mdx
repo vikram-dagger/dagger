@@ -44,11 +44,11 @@ container |
 
 Dagger Shell uses the Bash syntax as a frontend, but its behavior is quite different in the backend:
 
-- Instead of executing UNIX commands, you _execute Dagger Functions_
-- Instead of passing text streams from command to command, you _pass typed objects from function to function_
-- Instead of available commands being the same everywhere in the pipeline, _each command is executed in the context of the previous command's output object_. For example, `foo | bar` really means `foo().bar()`
-- Instead of using the local host as an execution environment, you _use containerized runtimes_
-- Instead of being mixed with regular commands, _shell builtins are prefixed with `.` (similar to SQLite)_
+- Instead of executing UNIX commands, you _execute Dagger Functions_.
+- Instead of passing text streams from command to command, you _pass typed objects from function to function_.
+- Instead of available commands being the same everywhere in the pipeline, _each command is executed in the context of the previous command's output object_. For example, `foo | bar` really means `foo().bar()`.
+- Instead of using the local host as an execution environment, you _use containerized runtimes_.
+- Instead of being mixed with regular commands, _shell builtins are prefixed with `.` (similar to SQLite)_.
 
 Besides these differences, **all the features** of the Bash *syntax* are available in Dagger Shell, including:
 
@@ -93,7 +93,7 @@ container | from alpine | terminal
 
 ## Modules
 
-Dagger Shell can load modules, inspect their types, and run their functions. This works for both local and remote modules.
+Dagger Shell can load Dagger Modules, inspect their types, and run their functions. This works for both local and remote modules.
 
 <VideoPlayer src="/img/current_docs/features/shell-module.webm" alt="Dagger Shell module loading" />
 
@@ -141,7 +141,7 @@ This works by executing the module's [constructor function](../extending/constru
 
 ## Variables
 
-Dagger Shell lets you save the result of any command to a variable, using the standard bash syntax.
+Dagger Shell lets you save the result of any command to a variable, using the standard Bash syntax.
 Values of any type can be saved to a variable, including objects.
 
 Here's an example:
